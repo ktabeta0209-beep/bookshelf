@@ -495,6 +495,14 @@ textarea{
   transform:scale(0.98);
 }
 
+.subActionButton{
+  background:rgba(96,165,250,0.18);
+  color:#bfdbfe;
+  border:1px solid rgba(96,165,250,0.35);
+  box-shadow:none;
+  font-size:15px;
+}
+
 </style>
 </head>
 
@@ -820,6 +828,10 @@ onclick="changeNovelView('author')"
     placeholder="例：9784088837857"
     >
     
+    <button class="subActionButton" onclick="searchByISBNFromInput()">
+        ISBNで検索
+        </button>
+
     <label class="inputLabel">出版社</label>
     <input
     id="publisherInput"
@@ -924,6 +936,7 @@ let scanner = null
 let selectedImage = ''
 let currentDetailIndex = null
 const RAKUTEN_APP_ID = '0191866f-a000-43d2-a501-7af5de32589a'
+const RAKUTEN_ACCESS_KEY = 'pk_PWC431uWAdMVCGgvmubpYDPvLrko9tFjp0CMgdVOdf5'
 
 /* =========================
 DB
@@ -1270,14 +1283,30 @@ ISBN検索
 
 async function searchRakutenBooks(isbn){
 
-if(!RAKUTEN_APP_ID || RAKUTEN_APP_ID === 'ここに楽天アプリIDを入れる'){
+if(
+!RAKUTEN_APP_ID ||
+RAKUTEN_APP_ID === 'ここに楽天アプリIDを入れる' ||
+!RAKUTEN_ACCESS_KEY ||
+RAKUTEN_ACCESS_KEY === 'ここに楽天Access Keyを入れる'
+){
+console.log('楽天API未設定')
 return null
 }
 
 try{
 
+const params =
+new URLSearchParams({
+format:'json',
+isbn:isbn,
+applicationId:RAKUTEN_APP_ID,
+accessKey:RAKUTEN_ACCESS_KEY,
+hits:'1',
+outOfStockFlag:'1'
+})
+
 const url =
-`https://openapi.rakuten.co.jp/services/api/BooksBook/Search/20170404?format=json&isbn=${encodeURIComponent(isbn)}&applicationId=${encodeURIComponent(RAKUTEN_APP_ID)}&hits=1&outOfStockFlag=1`
+`https://openapi.rakuten.co.jp/services/api/BooksBook/Search/20170404?${params.toString()}`
 
 console.log('楽天API URL:', url)
 
@@ -1287,16 +1316,21 @@ await fetch(url)
 const data =
 await response.json()
 
+console.log('楽天API status:', response.status)
 console.log('楽天API結果:', data)
+console.log('楽天API errors:', JSON.stringify(data.errors || data.error || data, null, 2))
 
 if(!response.ok){
-throw new Error(data.error_description || '楽天ブックスAPIの取得に失敗しました')
+throw new Error(
+JSON.stringify(data.errors || data.error || data)
+)
 }
 
 const item =
 data.Items?.[0]?.Item
 
 if(!item){
+console.log('楽天API：該当商品なし')
 return null
 }
 
@@ -1320,6 +1354,26 @@ console.log('楽天ブックスAPIエラー:', error)
 return null
 
 }
+
+}
+
+function searchByISBNFromInput(){
+
+const isbn =
+normalizeISBN(
+document.getElementById('isbnInput').value
+)
+
+if(!isbn){
+
+alert('ISBNを入力してください')
+return
+
+}
+
+document.getElementById('isbnInput').value = isbn
+
+searchByISBN(isbn)
 
 }
 
@@ -1385,62 +1439,9 @@ console.log(error)
 Google Books
 ========================= */
 
-if(!title || !author || !cover || !publisher || !publishedDate){
-
-try{
-
-const googleResponse =
-await fetch(
-`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`
-)
-
-const googleData =
-await googleResponse.json()
-
-const item =
-googleData.items?.[0]
-
-if(item){
-
-const info =
-item.volumeInfo || {}
-
-title =
-title || info.title || ''
-
-author =
-author || info.authors?.[0] || ''
-
-publisher =
-publisher || info.publisher || ''
-
-publishedDate =
-publishedDate || info.publishedDate || ''
-
-const imageLinks =
-info.imageLinks || {}
-
-cover =
-cover ||
-(
-imageLinks.extraLarge ||
-imageLinks.large ||
-imageLinks.medium ||
-imageLinks.small ||
-imageLinks.thumbnail ||
-imageLinks.smallThumbnail ||
-''
-).replace('http://','https://')
-
-}
-
-}catch(error){
-
-console.log(error)
-
-}
-
-}
+/*
+Google Booksはいったん停止
+*/
 
 /* =========================
 Rakuten Books
