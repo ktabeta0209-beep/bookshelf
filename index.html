@@ -1291,7 +1291,7 @@ console.log(error)
 Google Books
 ========================= */
 
-if(!title){
+if(!title || !author || !cover || !publisher || !publishedDate){
 
 try{
 
@@ -1308,16 +1308,26 @@ googleData.items?.[0]
 
 if(item){
 
+const info =
+item.volumeInfo || {}
+
 title =
-item.volumeInfo?.title || ''
+title || info.title || ''
 
 author =
-item.volumeInfo?.authors?.[0] || ''
+author || info.authors?.[0] || ''
+
+publisher =
+publisher || info.publisher || ''
+
+publishedDate =
+publishedDate || info.publishedDate || ''
 
 const imageLinks =
-item.volumeInfo?.imageLinks || {}
+info.imageLinks || {}
 
 cover =
+cover ||
 (
 imageLinks.extraLarge ||
 imageLinks.large ||
