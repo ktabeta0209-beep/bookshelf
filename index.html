@@ -1537,10 +1537,6 @@ if(cover){
 coverCandidates.push(cover)
 }
 
-// coverCandidates.push(
-// `https://ndlsearch.ndl.go.jp/thumbnail/${isbn}.jpg`
-// )
-
 for(const candidate of coverCandidates){
 
 try{
@@ -1570,16 +1566,13 @@ break
 
 }
 
-}catch(error){
-
-console.log('Base64化失敗。URLを直接使用:', candidate, error)
-
-selectedImage = candidate
-break
-
-}
-
-}
+document.getElementById(
+'loadingText'
+).innerText =
+`ISBN: ${isbn}
+取得結果：${title || 'タイトルなし'} / ${author || '作者なし'}
+表紙：${selectedImage ? '取得済み' : '画像なし'}
+画像URL：${selectedImage && !selectedImage.startsWith('data:') ? selectedImage : ''}`
 
 document.getElementById(
 'loadingText'
