@@ -2405,8 +2405,18 @@ originalIndex:index
 Object.keys(groupedBooks)
 .forEach(groupKey=>{
 
-const grouped =
-groupedBooks[groupKey]
+    const grouped =
+groupedBooks[groupKey].sort((a,b)=>{
+
+const volumeA =
+Number(a.volume || 0)
+
+const volumeB =
+Number(b.volume || 0)
+
+return volumeA - volumeB
+
+})
 
 const sample =
 grouped[0]
