@@ -923,6 +923,7 @@ let novelViewMode = 'title'
 let scanner = null
 let selectedImage = ''
 let currentDetailIndex = null
+const RAKUTEN_APP_ID = 'ここに楽天アプリIDを入れる'
 
 /* =========================
 DB
@@ -1267,6 +1268,55 @@ alert(
 ISBN検索
 ========================= */
 
+async function searchRakutenBooks(isbn){
+
+if(!RAKUTEN_APP_ID || RAKUTEN_APP_ID === 'ここに楽天アプリIDを入れる'){
+return null
+}
+
+try{
+
+const url =
+`https://openapi.rakuten.co.jp/services/api/BooksBook/Search/20170404?format=json&isbn=${encodeURIComponent(isbn)}&applicationId=${encodeURIComponent(RAKUTEN_APP_ID)}`
+
+const response =
+await fetch(url)
+
+if(!response.ok){
+throw new Error('楽天ブックスAPIの取得に失敗しました')
+}
+
+const data =
+await response.json()
+
+const item =
+data.Items?.[0]?.Item
+
+if(!item){
+return null
+}
+
+return {
+title:item.title || '',
+author:item.author || '',
+publisher:item.publisherName || '',
+publishedDate:formatDateForInput(item.salesDate || ''),
+cover:
+item.largeImageUrl ||
+item.mediumImageUrl ||
+item.smallImageUrl ||
+''
+}
+
+}catch(error){
+
+console.log('楽天ブックスAPIエラー:', error)
+return null
+
+}
+
+}
+
 async function searchByISBN(isbn){
 
 try{
@@ -1387,6 +1437,44 @@ console.log(error)
 }
 
 /* =========================
+Rakuten Books
+========================= */
+
+try{
+
+if(!title || !author || !cover || !publisher || !publishedDate){
+
+const rakutenBook =
+await searchRakutenBooks(isbn)
+
+if(rakutenBook){
+
+title =
+title || rakutenBook.title || ''
+
+author =
+author || rakutenBook.author || ''
+
+publisher =
+publisher || rakutenBook.publisher || ''
+
+publishedDate =
+publishedDate || rakutenBook.publishedDate || ''
+
+cover =
+cover || rakutenBook.cover || ''
+
+}
+
+}
+
+}catch(error){
+
+console.log(error)
+
+}
+
+/* =========================
 失敗
 ========================= */
 
@@ -1449,9 +1537,9 @@ if(cover){
 coverCandidates.push(cover)
 }
 
-coverCandidates.push(
-`https://ndlsearch.ndl.go.jp/thumbnail/${isbn}.jpg`
-)
+// coverCandidates.push(
+// `https://ndlsearch.ndl.go.jp/thumbnail/${isbn}.jpg`
+// )
 
 for(const candidate of coverCandidates){
 
