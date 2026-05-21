@@ -1270,7 +1270,7 @@ ISBN検索
 
 async function searchRakutenBooks(isbn){
 
-if(!RAKUTEN_APP_ID || RAKUTEN_APP_ID === '0191866f-a000-43d2-a501-7af5de32589a'){
+    if(!RAKUTEN_APP_ID || RAKUTEN_APP_ID === 'ここに楽天アプリIDを入れる'){
 return null
 }
 
@@ -1302,10 +1302,12 @@ author:item.author || '',
 publisher:item.publisherName || '',
 publishedDate:formatDateForInput(item.salesDate || ''),
 cover:
+(
 item.largeImageUrl ||
 item.mediumImageUrl ||
 item.smallImageUrl ||
 ''
+).replace('?_ex=200x200','')
 }
 
 }catch(error){
@@ -1442,8 +1444,6 @@ Rakuten Books
 
 try{
 
-if(!title || !author || !cover || !publisher || !publishedDate){
-
 const rakutenBook =
 await searchRakutenBooks(isbn)
 
@@ -1461,9 +1461,8 @@ publisher || rakutenBook.publisher || ''
 publishedDate =
 publishedDate || rakutenBook.publishedDate || ''
 
-cover =
-cover || rakutenBook.cover || ''
-
+if(rakutenBook.cover){
+cover = rakutenBook.cover
 }
 
 }
@@ -1555,7 +1554,7 @@ console.log('Base64化失敗:', candidate, error)
 const isDisplayable =
 await canLoadImage(candidate)
 
-if(isDisplayable){
+if(isDisplayable || candidate.includes('rakuten.co.jp')){
 
 selectedImage = candidate
 break
