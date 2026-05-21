@@ -1024,8 +1024,23 @@ async function imageUrlToBase64(url){
 const response =
 await fetch(url)
 
+if(!response.ok){
+throw new Error('画像が見つかりません')
+}
+
+const contentType =
+response.headers.get('content-type') || ''
+
+if(!contentType.startsWith('image/')){
+throw new Error('画像データではありません')
+}
+
 const blob =
 await response.blob()
+
+if(blob.size < 500){
+throw new Error('画像サイズが小さすぎます')
+}
 
 return new Promise(resolve=>{
 
@@ -1405,18 +1420,30 @@ volumeMatch[1]
 
 selectedImage=''
 
+const coverCandidates = []
+
 if(cover){
+coverCandidates.push(cover)
+}
+
+coverCandidates.push(
+`https://ndlsearch.ndl.go.jp/thumbnail/${isbn}.jpg`
+)
+
+for(const candidate of coverCandidates){
 
 try{
 
 selectedImage =
-await imageUrlToBase64(cover)
+await imageUrlToBase64(candidate)
+
+if(selectedImage){
+break
+}
 
 }catch(error){
 
-console.log(error)
-
-selectedImage = cover
+console.log('画像取得失敗:', candidate, error)
 
 }
 
