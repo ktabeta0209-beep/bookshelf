@@ -1056,6 +1056,29 @@ reader.readAsDataURL(blob)
 
 }
 
+function canLoadImage(url){
+
+return new Promise(resolve=>{
+
+const img =
+new Image()
+
+img.onload =
+function(){
+resolve(true)
+}
+
+img.onerror =
+function(){
+resolve(false)
+}
+
+img.src = url
+
+})
+
+}
+
 /* =========================
 ISBN補正
 ========================= */
@@ -1439,6 +1462,24 @@ await imageUrlToBase64(candidate)
 
 if(selectedImage){
 break
+}
+
+}catch(error){
+
+console.log('Base64化失敗:', candidate, error)
+
+const isDisplayable =
+await canLoadImage(candidate)
+
+if(isDisplayable){
+
+selectedImage = candidate
+break
+
+}
+
+}
+
 }
 
 }catch(error){
