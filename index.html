@@ -1270,24 +1270,28 @@ ISBN検索
 
 async function searchRakutenBooks(isbn){
 
-    if(!RAKUTEN_APP_ID || RAKUTEN_APP_ID === 'ここに楽天アプリIDを入れる'){
+if(!RAKUTEN_APP_ID || RAKUTEN_APP_ID === 'ここに楽天アプリIDを入れる'){
 return null
 }
 
 try{
 
 const url =
-`https://openapi.rakuten.co.jp/services/api/BooksBook/Search/20170404?format=json&isbn=${encodeURIComponent(isbn)}&applicationId=${encodeURIComponent(RAKUTEN_APP_ID)}`
+`https://openapi.rakuten.co.jp/services/api/BooksBook/Search/20170404?format=json&isbn=${encodeURIComponent(isbn)}&applicationId=${encodeURIComponent(RAKUTEN_APP_ID)}&hits=1&outOfStockFlag=1`
+
+console.log('楽天API URL:', url)
 
 const response =
 await fetch(url)
 
-if(!response.ok){
-throw new Error('楽天ブックスAPIの取得に失敗しました')
-}
-
 const data =
 await response.json()
+
+console.log('楽天API結果:', data)
+
+if(!response.ok){
+throw new Error(data.error_description || '楽天ブックスAPIの取得に失敗しました')
+}
 
 const item =
 data.Items?.[0]?.Item
@@ -1296,18 +1300,18 @@ if(!item){
 return null
 }
 
+const imageUrl =
+item.largeImageUrl ||
+item.mediumImageUrl ||
+item.smallImageUrl ||
+''
+
 return {
 title:item.title || '',
 author:item.author || '',
 publisher:item.publisherName || '',
 publishedDate:formatDateForInput(item.salesDate || ''),
-cover:
-(
-item.largeImageUrl ||
-item.mediumImageUrl ||
-item.smallImageUrl ||
-''
-).replace('?_ex=200x200','')
+cover:imageUrl ? imageUrl.replace('?_ex=200x200','') : ''
 }
 
 }catch(error){
