@@ -1443,7 +1443,10 @@ break
 
 }catch(error){
 
-console.log('画像取得失敗:', candidate, error)
+console.log('Base64化失敗。URLを直接使用:', candidate, error)
+
+selectedImage = candidate
+break
 
 }
 
