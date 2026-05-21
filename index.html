@@ -1457,7 +1457,8 @@ document.getElementById(
 ).innerText =
 `ISBN: ${isbn}
 取得結果：${title || 'タイトルなし'} / ${author || '作者なし'}
-表紙：${selectedImage ? '取得済み' : '画像なし'}`
+表紙：${selectedImage ? '取得済み' : '画像なし'}
+画像URL：${selectedImage && !selectedImage.startsWith('data:') ? selectedImage : ''}`
 
 }catch(error){
 
