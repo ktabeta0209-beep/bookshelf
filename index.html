@@ -709,10 +709,16 @@ onclick="changeNovelView('author')"
         <div class="formCardTitle">基本情報</div>
         
         <label class="inputLabel">作品名</label>
-        <input id="editScreenTitleInput" placeholder="作品名">
-        
-        <label class="inputLabel">作者名</label>
-        <input id="editScreenAuthorInput" placeholder="作者名">
+<input id="editScreenTitleInput" placeholder="作品名">
+
+<label class="inputLabel">作品名よみ</label>
+<input id="editScreenTitleKanaInput" placeholder="作品名よみ">
+
+<label class="inputLabel">作者名</label>
+<input id="editScreenAuthorInput" placeholder="作者名">
+
+<label class="inputLabel">作者名よみ</label>
+<input id="editScreenAuthorKanaInput" placeholder="作者名よみ">
         
         <div class="formGrid">
         
@@ -828,10 +834,16 @@ onclick="changeNovelView('author')"
     <div class="formCardTitle">基本情報</div>
     
     <label class="inputLabel">作品名</label>
-    <input id="titleInput" placeholder="例：ONE PIECE">
-    
-    <label class="inputLabel">作者名</label>
-    <input id="authorInput" placeholder="例：尾田栄一郎">
+<input id="titleInput" placeholder="例：ONE PIECE">
+
+<label class="inputLabel">作品名よみ</label>
+<input id="titleKanaInput" placeholder="例：わんぴーす">
+
+<label class="inputLabel">作者名</label>
+<input id="authorInput" placeholder="例：尾田栄一郎">
+
+<label class="inputLabel">作者名よみ</label>
+<input id="authorKanaInput" placeholder="例：おだえいいちろう">
     
     <div class="formGrid">
     
@@ -1432,14 +1444,18 @@ return
 }
 
 document.getElementById(
-'editScreenTitleInput'
+'editScreenTitleKanaInput'
 ).value =
-result.title || ''
+document.getElementById(
+'editScreenTitleKanaInput'
+).value || result.title || ''
 
 document.getElementById(
-'editScreenAuthorInput'
+'editScreenAuthorKanaInput'
 ).value =
-result.author || ''
+document.getElementById(
+'editScreenAuthorKanaInput'
+).value || result.author || ''
 
 document.getElementById(
 'editScreenIsbnInput'
@@ -1651,14 +1667,18 @@ throw new Error()
 }
 
 document.getElementById(
-'titleInput'
+'titleKanaInput'
 ).value =
-result.title || ''
+document.getElementById(
+'titleKanaInput'
+).value || result.title || ''
 
 document.getElementById(
-'authorInput'
+'authorKanaInput'
 ).value =
-result.author || ''
+document.getElementById(
+'authorKanaInput'
+).value || result.author || ''
 
 document.getElementById(
 'isbnInput'
@@ -1719,15 +1739,25 @@ document.getElementById(
 
 function addBook(){
 
-const title =
+    const title =
 document.getElementById(
 'titleInput'
-).value
+).value.trim()
+
+const titleKana =
+document.getElementById(
+'titleKanaInput'
+).value.trim()
 
 const author =
 document.getElementById(
 'authorInput'
-).value
+).value.trim()
+
+const authorKana =
+document.getElementById(
+'authorKanaInput'
+).value.trim()
 
 const category =
 document.getElementById(
@@ -1798,7 +1828,9 @@ function finishAdd(imageData){
     books.push({
 
 title,
+titleKana,
 author,
+authorKana,
 volume,
 latestVolume,
 category,
@@ -1825,12 +1857,20 @@ alert('登録しました')
 
 function resetInputs(){
 
-document.getElementById(
+    document.getElementById(
 'titleInput'
 ).value=''
 
 document.getElementById(
+'titleKanaInput'
+).value=''
+
+document.getElementById(
 'authorInput'
+).value=''
+
+document.getElementById(
+'authorKanaInput'
 ).value=''
 
 document.getElementById(
@@ -2276,9 +2316,19 @@ document.getElementById(
 book.title || ''
 
 document.getElementById(
+'editScreenTitleKanaInput'
+).value =
+book.titleKana || ''
+
+document.getElementById(
 'editScreenAuthorInput'
 ).value =
 book.author || ''
+
+document.getElementById(
+'editScreenAuthorKanaInput'
+).value =
+book.authorKana || ''
 
 document.getElementById(
 'editScreenVolumeInput'
@@ -2347,14 +2397,24 @@ document.getElementById(
 
 function finishSave(imageData){
 
-book.title =
+    book.title =
 document.getElementById(
 'editScreenTitleInput'
+).value.trim()
+
+book.titleKana =
+document.getElementById(
+'editScreenTitleKanaInput'
 ).value.trim()
 
 book.author =
 document.getElementById(
 'editScreenAuthorInput'
+).value.trim()
+
+book.authorKana =
+document.getElementById(
+'editScreenAuthorKanaInput'
 ).value.trim()
 
 book.volume =
@@ -2476,6 +2536,27 @@ showScreen('libraryScreen')
 描画
 ========================= */
 
+function getSortText(value){
+
+return String(value || '')
+.toLowerCase()
+.replace(/\s+/g,'')
+
+}
+
+function compareJapaneseText(a,b){
+
+return getSortText(a).localeCompare(
+getSortText(b),
+'ja',
+{
+numeric:true,
+sensitivity:'base'
+}
+)
+
+}
+
 function renderBooks(){
 
 const shelf =
@@ -2533,7 +2614,17 @@ book.author ||
 
 if(!groupedBooks[groupKey]){
 
-groupedBooks[groupKey]=[]
+groupedBooks[groupKey]={
+sortKey:
+currentCategory === 'マンガ'
+? (book.titleKana || book.title || groupKey)
+: (
+novelViewMode === 'title'
+? (book.titleKana || book.title || groupKey)
+: (book.authorKana || book.author || groupKey)
+),
+items:[]
+}
 
 }
 
@@ -2547,11 +2638,14 @@ originalIndex:index
 })
 
 Object.keys(groupedBooks)
-.sort((a,b)=>a.localeCompare(b,'ja'))
+.sort((a,b)=>compareJapaneseText(
+groupedBooks[a].sortKey,
+groupedBooks[b].sortKey
+))
 .forEach(groupKey=>{
 
     const grouped =
-groupedBooks[groupKey].sort((a,b)=>{
+groupedBooks[groupKey].items.sort((a,b)=>{
 
 const volumeA =
 Number(a.volume || 0)
