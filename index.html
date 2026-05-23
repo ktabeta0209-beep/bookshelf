@@ -525,6 +525,17 @@ textarea{
   font-weight:700;
 }
 
+.seriesEditButton{
+  width:auto;
+  margin-top:12px;
+  padding:9px 14px;
+  background:rgba(96,165,250,0.18);
+  color:#bfdbfe;
+  border:1px solid rgba(96,165,250,0.35);
+  box-shadow:none;
+  font-size:13px;
+}
+
 </style>
 </head>
 
@@ -676,7 +687,8 @@ onclick="changeNovelView('author')"
     
     <div class="detailSection">
     <div class="detailLabel">タグ</div>
-    <div class="detailValue" id="detailTags"></div>
+    <div class="det
+    ailValue" id="detailTags"></div>
     </div>
     
     <div class="detailSection">
@@ -693,6 +705,66 @@ onclick="changeNovelView('author')"
     </div>
     
     </div>
+
+    <div id="seriesEditScreen" class="screen">
+
+        <h1>作品情報編集</h1>
+        
+        <div class="countBadge" id="seriesEditCountBadge">
+        全体 0冊
+        </div>
+        
+        <div class="controls">
+        
+        <div class="formCard">
+        
+        <div class="formCardTitle">作品共通情報</div>
+        
+        <label class="inputLabel">作品名</label>
+        <input id="seriesTitleInput" placeholder="作品名">
+        
+        <label class="inputLabel">作品名よみ</label>
+        <input id="seriesTitleKanaInput" placeholder="作品名よみ">
+        
+        <label class="inputLabel">作者名</label>
+        <input id="seriesAuthorInput" placeholder="作者名">
+        
+        <label class="inputLabel">作者名よみ</label>
+        <input id="seriesAuthorKanaInput" placeholder="作者名よみ">
+        
+        <label class="inputLabel">カテゴリ</label>
+        <select id="seriesCategoryInput">
+        <option value="マンガ">マンガ</option>
+        <option value="小説">小説</option>
+        <option value="その他">その他</option>
+        </select>
+        
+        <label class="inputLabel">出版社</label>
+        <input id="seriesPublisherInput" placeholder="出版社">
+        
+        <label class="inputLabel">最新刊</label>
+        <input id="seriesLatestVolumeInput" type="number" placeholder="最新刊">
+        
+        <label class="inputLabel">タグ</label>
+        <input id="seriesTagsInput" placeholder="タグ">
+        
+        </div>
+        
+        <button class="primaryActionButton" onclick="saveSeriesEdit()">
+        作品情報を保存する
+        </button>
+        
+        <button class="backButton" onclick="showScreen('libraryScreen')">
+        キャンセル
+        </button>
+        
+        <button class="dangerButton" onclick="deleteSeriesBooks()">
+        この作品を全巻削除する
+        </button>
+        
+        </div>
+        
+        </div>
 
     <div id="editScreen" class="screen">
 
@@ -993,6 +1065,7 @@ let novelViewMode = 'title'
 let scanner = null
 let selectedImage = ''
 let currentDetailIndex = null
+let currentSeriesTitle = ''
 const RAKUTEN_APP_ID = '0191866f-a000-43d2-a501-7af5de32589a'
 const RAKUTEN_ACCESS_KEY = 'pk_PWC431uWAdMVCGgvmubpYDPvLrko9tFjp0CMgdVOdf5'
 
@@ -1976,7 +2049,8 @@ const badgeIds = [
 'settingsCountBadge',
 'detailCountBadge',
 'editCountBadge',
-'registerCountBadge'
+'registerCountBadge',
+'seriesEditCountBadge'
 ]
 
 badgeIds.forEach(id=>{
@@ -2239,6 +2313,193 @@ books.splice(index,1)
 saveBooks()
 
 renderBooks()
+
+}
+
+function openSeriesEdit(seriesTitle){
+
+currentSeriesTitle = seriesTitle
+
+const seriesBooks =
+books.filter(book=>book.title === seriesTitle)
+
+if(!seriesBooks.length){
+return
+}
+
+const sample =
+seriesBooks[0]
+
+document.getElementById(
+'seriesTitleInput'
+).value =
+sample.title || ''
+
+document.getElementById(
+'seriesTitleKanaInput'
+).value =
+sample.titleKana || ''
+
+document.getElementById(
+'seriesAuthorInput'
+).value =
+sample.author || ''
+
+document.getElementById(
+'seriesAuthorKanaInput'
+).value =
+sample.authorKana || ''
+
+document.getElementById(
+'seriesCategoryInput'
+).value =
+sample.category || 'マンガ'
+
+document.getElementById(
+'seriesPublisherInput'
+).value =
+sample.publisher || ''
+
+document.getElementById(
+'seriesLatestVolumeInput'
+).value =
+sample.latestVolume || ''
+
+document.getElementById(
+'seriesTagsInput'
+).value =
+(sample.tags || []).join(',')
+
+showScreen('seriesEditScreen')
+
+}
+
+function deleteSeriesBooks(){
+
+if(!currentSeriesTitle){
+return
+}
+
+const targetBooks =
+books.filter(book=>book.title === currentSeriesTitle)
+
+if(!targetBooks.length){
+return
+}
+
+const message =
+`「${currentSeriesTitle}」を全${targetBooks.length}冊削除しますか？`
+
+if(!confirm(message)){
+return
+}
+
+books =
+books.filter(book=>book.title !== currentSeriesTitle)
+
+currentSeriesTitle = ''
+
+openedSeries = null
+
+saveBooks()
+
+renderBooks()
+
+updateCountBadges()
+
+showScreen('libraryScreen')
+
+alert('作品を削除しました')
+
+}
+
+function saveSeriesEdit(){
+
+if(!currentSeriesTitle){
+return
+}
+
+const newTitle =
+document.getElementById(
+'seriesTitleInput'
+).value.trim()
+
+if(!newTitle){
+
+alert('作品名を入力してください')
+return
+
+}
+
+const newTitleKana =
+document.getElementById(
+'seriesTitleKanaInput'
+).value.trim()
+
+const newAuthor =
+document.getElementById(
+'seriesAuthorInput'
+).value.trim()
+
+const newAuthorKana =
+document.getElementById(
+'seriesAuthorKanaInput'
+).value.trim()
+
+const newCategory =
+document.getElementById(
+'seriesCategoryInput'
+).value
+
+const newPublisher =
+document.getElementById(
+'seriesPublisherInput'
+).value.trim()
+
+const newLatestVolume =
+Number(
+document.getElementById(
+'seriesLatestVolumeInput'
+).value
+)
+
+const newTags =
+document.getElementById(
+'seriesTagsInput'
+)
+.value
+.split(',')
+.map(tag=>tag.trim())
+.filter(tag=>tag)
+
+books.forEach(book=>{
+
+if(book.title === currentSeriesTitle){
+
+book.title = newTitle
+book.titleKana = newTitleKana
+book.author = newAuthor
+book.authorKana = newAuthorKana
+book.category = newCategory
+book.publisher = newPublisher
+book.latestVolume = newLatestVolume
+book.tags = newTags
+
+}
+
+})
+
+currentSeriesTitle = newTitle
+
+saveBooks()
+
+renderBooks()
+
+updateCountBadges()
+
+showScreen('libraryScreen')
+
+alert('作品情報を保存しました')
 
 }
 
@@ -2719,6 +2980,26 @@ renderBooks()
 }
 
 header.appendChild(title)
+
+const seriesEditButton =
+document.createElement('button')
+
+seriesEditButton.className =
+'seriesEditButton'
+
+seriesEditButton.innerText =
+'作品情報を編集'
+
+seriesEditButton.onclick =
+function(event){
+
+event.stopPropagation()
+
+openSeriesEdit(groupKey)
+
+}
+
+header.appendChild(seriesEditButton)
 
 if(currentCategory === 'マンガ'){
 
