@@ -1444,18 +1444,28 @@ return
 }
 
 document.getElementById(
+'editScreenTitleInput'
+).value =
+result.title || ''
+
+document.getElementById(
+'editScreenAuthorInput'
+).value =
+result.author || ''
+
+document.getElementById(
 'editScreenTitleKanaInput'
 ).value =
 document.getElementById(
 'editScreenTitleKanaInput'
-).value || result.title || ''
+).value || ''
 
 document.getElementById(
 'editScreenAuthorKanaInput'
 ).value =
 document.getElementById(
 'editScreenAuthorKanaInput'
-).value || result.author || ''
+).value || ''
 
 document.getElementById(
 'editScreenIsbnInput'
@@ -1667,18 +1677,28 @@ throw new Error()
 }
 
 document.getElementById(
+'titleInput'
+).value =
+result.title || ''
+
+document.getElementById(
+'authorInput'
+).value =
+result.author || ''
+
+document.getElementById(
 'titleKanaInput'
 ).value =
 document.getElementById(
 'titleKanaInput'
-).value || result.title || ''
+).value || ''
 
 document.getElementById(
 'authorKanaInput'
 ).value =
 document.getElementById(
 'authorKanaInput'
-).value || result.author || ''
+).value || ''
 
 document.getElementById(
 'isbnInput'
@@ -2628,7 +2648,7 @@ items:[]
 
 }
 
-groupedBooks[groupKey].push({
+groupedBooks[groupKey].items.push({
 
 ...book,
 originalIndex:index
