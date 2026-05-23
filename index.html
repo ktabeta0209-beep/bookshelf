@@ -2981,26 +2981,6 @@ renderBooks()
 
 header.appendChild(title)
 
-const seriesEditButton =
-document.createElement('button')
-
-seriesEditButton.className =
-'seriesEditButton'
-
-seriesEditButton.innerText =
-'作品情報を編集'
-
-seriesEditButton.onclick =
-function(event){
-
-event.stopPropagation()
-
-openSeriesEdit(groupKey)
-
-}
-
-header.appendChild(seriesEditButton)
-
 if(currentCategory === 'マンガ'){
 
 const author =
@@ -3075,6 +3055,26 @@ missing.length
 header.appendChild(
 missingElement
 )
+
+const seriesEditButton =
+document.createElement('button')
+
+seriesEditButton.className =
+'seriesEditButton'
+
+seriesEditButton.innerText =
+'作品情報を編集'
+
+seriesEditButton.onclick =
+function(event){
+
+event.stopPropagation()
+
+openSeriesEdit(groupKey)
+
+}
+
+header.appendChild(seriesEditButton)
 
 }
 
