@@ -2547,6 +2547,7 @@ originalIndex:index
 })
 
 Object.keys(groupedBooks)
+.sort((a,b)=>a.localeCompare(b,'ja'))
 .forEach(groupKey=>{
 
     const grouped =
