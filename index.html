@@ -513,6 +513,18 @@ textarea{
   font-size:15px;
 }
 
+.countBadge{
+  margin:0 20px 10px;
+  padding:10px 14px;
+  width:fit-content;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.10);
+  border-radius:999px;
+  color:rgba(255,255,255,0.78);
+  font-size:13px;
+  font-weight:700;
+}
+
 </style>
 </head>
 
@@ -521,6 +533,10 @@ textarea{
 <div id="libraryScreen" class="screen active">
 
 <h1 id="libraryTitle">マンガ</h1>
+
+<div class="countBadge" id="libraryCountBadge">
+    全体 0冊
+    </div>
 
 <div class="controls">
 
@@ -562,6 +578,10 @@ onclick="changeNovelView('author')"
 
 <h1>設定</h1>
 
+<div class="countBadge" id="settingsCountBadge">
+    全体 0冊
+    </div>
+
 <div class="controls">
 
 <div class="settingsCard">
@@ -597,6 +617,10 @@ onclick="changeNovelView('author')"
 <div id="detailScreen" class="screen">
 
     <h1>詳細</h1>
+
+    <div class="countBadge" id="detailCountBadge">
+        全体 0冊
+        </div>
     
     <div class="controls">
     
@@ -673,6 +697,10 @@ onclick="changeNovelView('author')"
     <div id="editScreen" class="screen">
 
         <h1>編集</h1>
+
+        <div class="countBadge" id="editCountBadge">
+            全体 0冊
+            </div>
         
         <div class="controls">
         
@@ -724,6 +752,10 @@ onclick="changeNovelView('author')"
         <label class="inputLabel">ISBN</label>
         <input id="editScreenIsbnInput" placeholder="ISBN">
         
+        <button class="subActionButton" onclick="searchByISBNFromEditInput()">
+            ISBNで検索
+            </button>
+
         <label class="inputLabel">出版社</label>
         <input id="editScreenPublisherInput" placeholder="出版社">
         
@@ -767,6 +799,10 @@ onclick="changeNovelView('author')"
 <div id="registerScreen" class="screen">
 
     <h1>登録</h1>
+
+    <div class="countBadge" id="registerCountBadge">
+        全体 0冊
+        </div>
     
     <div class="controls">
     
@@ -1367,6 +1403,83 @@ return null
 
 }
 
+async function searchByISBNFromEditInput(){
+
+const isbn =
+normalizeISBN(
+document.getElementById('editScreenIsbnInput').value
+)
+
+if(!isbn){
+
+alert('ISBNを入力してください')
+return
+
+}
+
+document.getElementById('editScreenIsbnInput').value = isbn
+
+try{
+
+const result =
+await fetchBookInfoByISBN(isbn)
+
+if(!result){
+
+alert('本情報を取得できませんでした')
+return
+
+}
+
+document.getElementById(
+'editScreenTitleInput'
+).value =
+result.title || ''
+
+document.getElementById(
+'editScreenAuthorInput'
+).value =
+result.author || ''
+
+document.getElementById(
+'editScreenIsbnInput'
+).value =
+isbn
+
+document.getElementById(
+'editScreenPublisherInput'
+).value =
+result.publisher || ''
+
+document.getElementById(
+'editScreenPublishedDateInput'
+).value =
+formatDateForInput(result.publishedDate)
+
+if(result.cover){
+
+const book =
+books[currentDetailIndex]
+
+if(book){
+
+book.image = result.cover
+
+}
+
+}
+
+alert('ISBN検索が完了しました')
+
+}catch(error){
+
+console.log(error)
+alert('ISBN検索に失敗しました')
+
+}
+
+}
+
 function searchByISBNFromInput(){
 
 const isbn =
@@ -1387,15 +1500,7 @@ searchByISBN(isbn)
 
 }
 
-async function searchByISBN(isbn){
-
-try{
-
-document.getElementById(
-'loadingText'
-).innerText =
-`ISBN: ${isbn}
-本情報取得中...`
+async function fetchBookInfoByISBN(isbn){
 
 let title=''
 let author=''
@@ -1403,10 +1508,7 @@ let cover=''
 let publisher=''
 let publishedDate=''
 
-/* =========================
-openBD
-========================= */
-
+/* openBD */
 try{
 
 const response =
@@ -1419,7 +1521,7 @@ await response.json()
 
 if(data[0]){
 
-    const summary =
+const summary =
 data[0].summary || {}
 
 title =
@@ -1445,18 +1547,7 @@ console.log(error)
 
 }
 
-/* =========================
-Google Books
-========================= */
-
-/*
-Google Booksはいったん停止
-*/
-
-/* =========================
-Rakuten Books
-========================= */
-
+/* Rakuten Books */
 try{
 
 const rakutenBook =
@@ -1488,62 +1579,12 @@ console.log(error)
 
 }
 
-/* =========================
-失敗
-========================= */
-
 if(!title){
-
-throw new Error()
-
+return null
 }
 
-/* =========================
-入力
-========================= */
-
-document.getElementById(
-'titleInput'
-).value =
-title
-
-document.getElementById(
-'authorInput'
-).value =
-author
-
-document.getElementById(
-'isbnInput'
-).value =
-isbn
-
-document.getElementById(
-'publisherInput'
-).value =
-publisher
-
-document.getElementById(
-'publishedDateInput'
-).value =
-formatDateForInput(publishedDate)
-
-const volumeMatch =
-title.match(/([0-9]+)$/)
-
-if(volumeMatch){
-
-document.getElementById(
-'volumeInput'
-).value =
-volumeMatch[1]
-
-}
-
-/* =========================
-画像
-========================= */
-
-selectedImage=''
+/* 画像 */
+let image = ''
 
 const coverCandidates = []
 
@@ -1555,10 +1596,10 @@ for(const candidate of coverCandidates){
 
 try{
 
-selectedImage =
+image =
 await imageUrlToBase64(candidate)
 
-if(selectedImage){
+if(image){
 break
 }
 
@@ -1569,9 +1610,9 @@ console.log('Base64化失敗:', candidate, error)
 const isDisplayable =
 await canLoadImage(candidate)
 
-if(isDisplayable || candidate.includes('rakuten.co.jp')){
+if(isDisplayable){
 
-selectedImage = candidate
+image = candidate
 break
 
 }
@@ -1580,19 +1621,80 @@ break
 
 }
 
-document.getElementById(
-'loadingText'
-).innerText =
-`ISBN: ${isbn}
-取得結果：${title || 'タイトルなし'} / ${author || '作者なし'}
-表紙：${selectedImage ? '取得済み' : '画像なし'}
-画像URL：${selectedImage && !selectedImage.startsWith('data:') ? selectedImage : ''}`
+return {
+title,
+author,
+publisher,
+publishedDate,
+cover:image
+}
+
+}
+
+async function searchByISBN(isbn){
+
+try{
 
 document.getElementById(
 'loadingText'
 ).innerText =
 `ISBN: ${isbn}
-取得結果：${title || 'タイトルなし'} / ${author || '作者なし'}
+本情報取得中...`
+
+const result =
+await fetchBookInfoByISBN(isbn)
+
+if(!result){
+
+throw new Error()
+
+}
+
+document.getElementById(
+'titleInput'
+).value =
+result.title || ''
+
+document.getElementById(
+'authorInput'
+).value =
+result.author || ''
+
+document.getElementById(
+'isbnInput'
+).value =
+isbn
+
+document.getElementById(
+'publisherInput'
+).value =
+result.publisher || ''
+
+document.getElementById(
+'publishedDateInput'
+).value =
+formatDateForInput(result.publishedDate)
+
+const volumeMatch =
+(result.title || '').match(/([0-9]+)$/)
+
+if(volumeMatch){
+
+document.getElementById(
+'volumeInput'
+).value =
+volumeMatch[1]
+
+}
+
+selectedImage =
+result.cover || ''
+
+document.getElementById(
+'loadingText'
+).innerText =
+`ISBN: ${isbn}
+取得結果：${result.title || 'タイトルなし'} / ${result.author || '作者なし'}
 表紙：${selectedImage ? '取得済み' : '画像なし'}
 画像URL：${selectedImage && !selectedImage.startsWith('data:') ? selectedImage : ''}`
 
@@ -1611,7 +1713,6 @@ document.getElementById(
 }
 
 }
-
 /* =========================
 登録
 ========================= */
@@ -1714,6 +1815,8 @@ saveBooks()
 
 renderBooks()
 
+updateCountBadges()
+
 resetInputs()
 
 alert('登録しました')
@@ -1800,7 +1903,38 @@ selectedImage || ''
 画面
 ========================= */
 
+function updateCountBadges(){
+
+const total =
+books.length
+
+const text =
+`全体 ${total}冊`
+
+const badgeIds = [
+'libraryCountBadge',
+'settingsCountBadge',
+'detailCountBadge',
+'editCountBadge',
+'registerCountBadge'
+]
+
+badgeIds.forEach(id=>{
+
+const badge =
+document.getElementById(id)
+
+if(badge){
+badge.innerText = text
+}
+
+})
+
+}
+
 function showScreen(screenId){
+
+updateCountBadges()
 
 document
 .querySelectorAll('.screen')
@@ -2332,9 +2466,9 @@ saveBooks()
 
 renderBooks()
 
-showScreen('libraryScreen')
+updateCountBadges()
 
-alert('削除しました')
+showScreen('libraryScreen')
 
 }
 
@@ -2674,6 +2808,8 @@ await openDB()
 await loadBooks()
 
 renderBooks()
+
+updateCountBadges()
 
 }
 
