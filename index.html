@@ -1516,44 +1516,45 @@ return
 
 }
 
-document.getElementById(
-'editScreenTitleInput'
-).value =
+const titleInput =
+document.getElementById('editScreenTitleInput')
+
+const authorInput =
+document.getElementById('editScreenAuthorInput')
+
+const publisherInput =
+document.getElementById('editScreenPublisherInput')
+
+const publishedDateInput =
+document.getElementById('editScreenPublishedDateInput')
+
+if(!titleInput.value.trim()){
+
+titleInput.value =
 result.title || ''
 
-document.getElementById(
-'editScreenAuthorInput'
-).value =
+}
+
+if(!authorInput.value.trim()){
+
+authorInput.value =
 result.author || ''
 
-document.getElementById(
-'editScreenTitleKanaInput'
-).value =
-document.getElementById(
-'editScreenTitleKanaInput'
-).value || ''
+}
 
-document.getElementById(
-'editScreenAuthorKanaInput'
-).value =
-document.getElementById(
-'editScreenAuthorKanaInput'
-).value || ''
+if(!publisherInput.value.trim()){
 
-document.getElementById(
-'editScreenIsbnInput'
-).value =
-isbn
-
-document.getElementById(
-'editScreenPublisherInput'
-).value =
+publisherInput.value =
 result.publisher || ''
 
-document.getElementById(
-'editScreenPublishedDateInput'
-).value =
+}
+
+if(!publishedDateInput.value){
+
+publishedDateInput.value =
 formatDateForInput(result.publishedDate)
+
+}
 
 if(result.cover){
 
@@ -1568,7 +1569,11 @@ book.image = result.cover
 
 }
 
-alert('ISBN検索が完了しました')
+alert(
+result.cover
+? 'ISBN検索が完了しました。表紙画像を更新しました。'
+: 'ISBN検索が完了しました。表紙画像は見つかりませんでした。'
+)
 
 }catch(error){
 
@@ -1578,7 +1583,6 @@ alert('ISBN検索に失敗しました')
 }
 
 }
-
 function searchByISBNFromInput(){
 
 const isbn =
